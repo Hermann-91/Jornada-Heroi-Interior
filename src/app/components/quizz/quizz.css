@@ -1,0 +1,490 @@
+:host {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+    padding: 3rem 1rem;
+    background: radial-gradient(circle at top, #120b29 0%, #030207 100%);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.quizz_container {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.quizz_header {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.title_spark {
+    font-size: 2.6rem;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    background: linear-gradient(135deg, #c084fc 0%, #8b5cf6 50%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.35));
+}
+
+.subtitle {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    font-weight: 400;
+}
+
+/* CARDS PREMIUM GLASSMORPHIC */
+.intro_card, .journey_card {
+    position: relative;
+    background: rgba(18, 14, 30, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
+    overflow: hidden;
+}
+
+/* Orb de luz mística decorativa */
+.orb_mistic {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(99, 102, 241, 0) 70%);
+    border-radius: 50%;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: blur(25px);
+    pointer-events: none; /* Impede que bloqueie cliques no input e botões */
+}
+
+.intro_card h3, .journey_card h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-top: 0.5rem;
+}
+
+.intro_card p {
+    color: #cbd5e1;
+    line-height: 1.65;
+    font-size: 1.05rem;
+}
+
+/* BOTÕES PREMIUM */
+.btn-primary {
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.95rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    width: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-next {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #c084fc;
+    border-radius: 12px;
+    padding: 0.95rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.btn-next:hover {
+    background: rgba(192, 132, 252, 0.08);
+    border-color: rgba(192, 132, 252, 0.3);
+    transform: translateY(-1px);
+}
+
+/* METADADOS DA JORNADA */
+.journey_meta {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.badge_day {
+    color: #c084fc;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge_phase {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.quizz_questions h3 {
+    font-size: 1.4rem;
+    line-height: 1.5;
+    color: #f1f5f9;
+    font-weight: 600;
+    margin: 0.5rem 0;
+    text-align: left;
+    width: 100%;
+}
+
+/* ÁREA DE DIGITAÇÃO */
+.quizz_input_area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.text-area-mistic {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1.25rem;
+    color: #f8fafc;
+    font-family: inherit;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.text-area-mistic:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.25);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.action_bar {
+    width: 100%;
+}
+
+/* CARREGANDO ORÁCULO */
+.spinner_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+}
+
+.spinner_container p {
+    color: #c084fc;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3.5px solid rgba(192, 132, 252, 0.1);
+    border-top: 3.5px solid #8b5cf6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* CARD DE INSIGHT DO RAG */
+.insight_result {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.insight_header h4 {
+    color: #c084fc;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: left;
+    margin-bottom: 0.25rem;
+    border-left: 3px solid #8b5cf6;
+    padding-left: 0.75rem;
+}
+
+.insight_content {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px dashed rgba(167, 139, 250, 0.18);
+    border-radius: 18px;
+    padding: 1.75rem;
+    text-align: left;
+}
+
+.insight_content p {
+    color: #cbd5e1;
+    line-height: 1.75;
+    font-size: 1.05rem;
+    white-space: pre-wrap;
+}
+
+.insight_actions {
+    width: 100%;
+}
+
+.congratulations_panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.congratulations_panel h3 {
+    color: #10b981;
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+.congratulations_panel p {
+    color: #94a3b8;
+    margin-bottom: 1rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* PAINEL DE GESTÃO DE USUÁRIOS */
+.user_creation_area {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.input-mistic {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+    color: #f8fafc;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.input-mistic:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.25);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.btn-create {
+    width: auto !important;
+    padding: 0.8rem 1.5rem !important;
+    white-space: nowrap;
+}
+
+.users_list_container {
+    width: 100%;
+    margin-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 1.5rem;
+}
+
+.no_users {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.users_list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Scrollbar mística */
+.users_list::-webkit-scrollbar {
+    width: 5px;
+}
+.users_list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+.users_list::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 4px;
+}
+
+.user_item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 0.85rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.user_item:hover {
+    background: rgba(139, 92, 246, 0.08);
+    border-color: rgba(139, 92, 246, 0.25);
+    transform: translateY(-1px);
+}
+
+.user_info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.user_name {
+    color: #f8fafc;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.user_status {
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.finished_tag {
+    color: #10b981;
+    font-weight: 700;
+}
+
+.btn-delete-user {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.btn-delete-user:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.btn-back-menu {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    color: #c084fc;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+    margin-bottom: 0.5rem;
+}
+
+.btn-back-menu:hover {
+    color: #a855f7;
+}
+
+.badge_user {
+    color: #fbbf24;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ESTILIZAÇÃO DOS 3 TÓPICOS */
+.insight_meditation {
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 18px;
+    padding: 1.5rem;
+    text-align: left;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.1);
+}
+
+.insight_meditation h5 {
+    color: #c084fc;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.meditation_text {
+    color: #e2e8f0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.insight_challenge {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 18px;
+    padding: 1.5rem;
+    text-align: left;
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.1);
+}
+
+.insight_challenge h5 {
+    color: #fbbf24;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.challenge_text {
+    color: #e2e8f0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0;
+}

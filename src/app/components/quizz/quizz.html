@@ -1,0 +1,134 @@
+<div class="quizz_container">
+
+    <div class="quizz_header">
+        <h2 class="title_spark">{{ title }}</h2>
+        <p class="subtitle">Desperte o seu verdadeiro potencial através da reflexão literária.</p>
+    </div>
+
+    <!-- TELA 1: INTRODUÇÃO E SELEÇÃO DE HERÓI -->
+    @if (!isStarted) {
+        <div class="intro_card">
+            <div class="orb_mistic"></div>
+            <h3>Selecione seu Herói</h3>
+            <p>Escolha um herói existente ou crie um novo personagem para ingressar na Jornada do Herói.</p>
+
+            <!-- Criar Novo Herói -->
+            <div class="user_creation_area">
+                <input 
+                    type="text" 
+                    [(ngModel)]="newUserName" 
+                    placeholder="Nome do Novo Herói..." 
+                    class="input-mistic"
+                    (keyup.enter)="criarHeroi()"
+                />
+                <button class="btn-primary btn-create" (click)="criarHeroi()" [disabled]="isLoading">Criar</button>
+            </div>
+
+            <!-- Lista de Heróis -->
+            <div class="users_list_container">
+                @if (users.length === 0) {
+                    <p class="no_users">Nenhum herói cadastrado ainda. Crie um herói acima para começar!</p>
+                } @else {
+                    <div class="users_list">
+                        @for (user of users; track user.id) {
+                            <div class="user_item" (click)="selecionarHeroi(user)">
+                                <div class="user_info">
+                                    <span class="user_name">🛡️ {{ user.name }}</span>
+                                    <span class="user_status">
+                                        @if (user.finished) {
+                                            <span class="finished_tag">🏆 Concluído</span>
+                                        } @else {
+                                            Dia {{ user.current_day }} da Jornada
+                                        }
+                                    </span>
+                                </div>
+                                <button class="btn-delete-user" (click)="deletarHeroi(user.id, $event)" title="Excluir herói">🗑️</button>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    } @else {
+        <!-- TELA 2: FLUXO DE PERGUNTAS / JOGO -->
+        <div class="journey_card">
+            
+            <!-- Botão de voltar ao menu -->
+            <button class="btn-back-menu" (click)="sairDoJogo()">❮ Voltar ao Menu de Heróis</button>
+
+            <!-- Ficha de progresso diário -->
+            <div class="journey_meta">
+                <span class="badge_user">Herói: {{ currentUser?.name }}</span>
+                <span class="badge_day">Dia {{ currentDay }} da Jornada</span>
+                <span class="badge_phase">{{ phase }}</span>
+            </div>
+
+            <!-- Pergunta do Dia -->
+            <div class="quizz_questions">
+                <h3>{{ question }}</h3>
+            </div>
+
+            <!-- Lógica Condicional: Se o dia ainda não foi respondido -->
+            @if (!isDayCompleted) {
+                <div class="quizz_input_area">
+                    <textarea 
+                        [(ngModel)]="answerInput" 
+                        placeholder="Digite aqui sua reflexão sincera e profunda..." 
+                        rows="6"
+                        class="text-area-mistic"
+                        [disabled]="isLoading"
+                    ></textarea>
+                    
+                    <div class="action_bar">
+                        @if (isLoading) {
+                            <div class="spinner_container">
+                                <span class="spinner"></span>
+                                <p>O Oráculo está consultando os livros de sabedoria...</p>
+                            </div>
+                        } @else {
+                            <button class="btn-primary" (click)="enviarReflexao()">Consultar Oráculo</button>
+                        }
+                    </div>
+                </div>
+            } @else {
+                <!-- Lógica Condicional: Se o dia JÁ foi respondido, exibe o insight RAG -->
+                <div class="insight_result">
+                    <div class="insight_header">
+                        <h4>🔮 Insight do Mentor Virtual</h4>
+                    </div>
+                    <div class="insight_content">
+                        <p class="reflection_text">{{ mentorInsightText }}</p>
+                    </div>
+
+                    @if (mentorMeditation) {
+                        <div class="insight_meditation">
+                            <h5>🧘 Meditação Diária</h5>
+                            <p class="meditation_text"><em>"{{ mentorMeditation }}"</em></p>
+                        </div>
+                    }
+
+                    @if (mentorChallenge) {
+                        <div class="insight_challenge">
+                            <h5>⚔️ Desafio Prático</h5>
+                            <p class="challenge_text">{{ mentorChallenge }}</p>
+                        </div>
+                    }
+
+                    <div class="insight_actions">
+                        @if (isFinished) {
+                            <div class="congratulations_panel">
+                                <h3>🎉 Jornada Concluída!</h3>
+                                <p>Você completou o seu trajeto e integrou o elixir do autoconhecimento. Volte amanhã ou reinicie quando quiser.</p>
+                                <button class="btn-primary" (click)="iniciarJornada()">Reiniciar Jornada</button>
+                            </div>
+                        } @else {
+                            <button class="btn-next" (click)="avancarDia()">Avançar para o Próximo Dia ➔</button>
+                        }
+                    </div>
+                </div>
+            }
+
+        </div>
+    }
+
+</div>
