@@ -215,4 +215,17 @@ class JourneyController extends Controller
             'finished' => false
         ];
     }
+
+    /**
+     * Endpoint 3: GET /api/journey/history/{userId}
+     * Retorna o histórico completo das etapas da jornada de um herói.
+     */
+    public function history($userId)
+    {
+        $history = \App\Models\UserJourney::where('user_id', $userId)
+            ->orderBy('current_day', 'asc')
+            ->get();
+
+        return response()->json($history, 200);
+    }
 }

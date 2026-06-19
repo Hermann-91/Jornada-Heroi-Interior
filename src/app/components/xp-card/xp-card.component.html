@@ -1,0 +1,13 @@
+<div class="xp_card">
+    <div class="xp_header">
+        <span class="level_badge">Nível {{ levelNum }}</span>
+        <span class="level_title">{{ levelName }}</span>
+    </div>
+    <div class="xp_bar_container">
+        <div class="xp_bar_fill" [style.width.%]="xpPercentage"></div>
+    </div>
+    <div class="xp_footer">
+        <span class="xp_points">{{ xp }} XP Totais</span>
+        <span class="xp_percentage">{{ xpPercentage }}% para o próximo nível</span>
+    </div>
+</div>

@@ -1,0 +1,43 @@
+<div class="attributes_card">
+    <h4>Atributos de Sabedoria</h4>
+    
+    <div class="attribute_item">
+        <div class="attribute_info">
+            <span>🏛️ Estoicismo</span>
+            <span>{{ stoicism }}%</span>
+        </div>
+        <div class="attribute_bar_container stoicism_bar">
+            <div class="attribute_bar_fill" [style.width.%]="stoicism"></div>
+        </div>
+    </div>
+    
+    <div class="attribute_item">
+        <div class="attribute_info">
+            <span>🌌 Self (Jung)</span>
+            <span>{{ jung }}%</span>
+        </div>
+        <div class="attribute_bar_container jung_bar">
+            <div class="attribute_bar_fill" [style.width.%]="jung"></div>
+        </div>
+    </div>
+
+    <div class="attribute_item">
+        <div class="attribute_info">
+            <span>🧘 Presença (Sāti)</span>
+            <span>{{ sati }}%</span>
+        </div>
+        <div class="attribute_bar_container sati_bar">
+            <div class="attribute_bar_fill" [style.width.%]="sati"></div>
+        </div>
+    </div>
+
+    <div class="attribute_item">
+        <div class="attribute_info">
+            <span>⚔️ Conexão (Campbell)</span>
+            <span>{{ campbell }}%</span>
+        </div>
+        <div class="attribute_bar_container campbell_bar">
+            <div class="attribute_bar_fill" [style.width.%]="campbell"></div>
+        </div>
+    </div>
+</div>

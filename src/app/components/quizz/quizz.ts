@@ -1,12 +1,21 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { JourneyService, JourneyResponse, User } from '../../services/journey';
+import { JourneyService, JourneyResponse, User, JourneyStage } from '../../services/journey';
+import { XpCardComponent } from '../xp-card/xp-card.component';
+import { AttributesCardComponent } from '../attributes-card/attributes-card.component';
+import { JourneyTrailCardComponent } from '../journey-trail-card/journey-trail-card.component';
 
 @Component({
   selector: 'app-quizz',
   standalone: true,
-  imports: [CommonModule, FormsModule], // Importa o FormsModule para podermos usar formulários (textarea)
+  imports: [
+    CommonModule,
+    FormsModule,
+    XpCardComponent,
+    AttributesCardComponent,
+    JourneyTrailCardComponent
+  ], // Importa o FormsModule para podermos usar formulários (textarea) e os subcomponentes de gamificação
   templateUrl: './quizz.html',
   styleUrl: './quizz.css',
 })
@@ -30,6 +39,25 @@ export class Quizz implements OnInit {
   public isLoading = false; // Exibe o status de "pensando..." da IA
   public isDayCompleted = false; // Controla se o dia atual já foi respondido
   public isFinished = false;
+
+  // Histórico e Gamificação
+  public history: JourneyStage[] = [];
+  public selectedStage: JourneyStage | null = null;
+  public showHistoryModal = false;
+
+  // XP e Nível
+  public xp = 0;
+  public levelNum = 1;
+  public levelName = 'Iniciado Solitário';
+  public xpPercentage = 0;
+
+  // Atributos de Sabedoria
+  public attributeStoicism = 0;
+  public attributeJung = 0;
+  public attributeSati = 0;
+  public attributeCampbell = 0;
+
+  public readonly totalJourneyDays = Array.from({ length: 21 }, (_, i) => i + 1);
 
   // Múltiplos Usuários (Painel)
   public users: User[] = [];
@@ -121,12 +149,16 @@ export class Quizz implements OnInit {
     this.mentorMeditation = '';
     this.mentorChallenge = '';
     this.answerInput = '';
+    this.carregarHistorico(user.id); // Carrega o histórico e XP
   }
 
   public sairDoJogo(): void {
     this.currentUser = null;
     this.isStarted = false;
+    this.history = [];
+    this.xp = 0;
     this.carregarHerois();
+    this.cdr.detectChanges();
   }
 
   /**
@@ -149,6 +181,18 @@ export class Quizz implements OnInit {
         this.mentorChallenge = '';
         this.answerInput = '';
         this.isLoading = false;
+        
+        // Reseta a gamificação localmente
+        this.history = [];
+        this.xp = 0;
+        this.xpPercentage = 0;
+        this.levelNum = 1;
+        this.levelName = 'Iniciado Solitário';
+        this.attributeStoicism = 0;
+        this.attributeJung = 0;
+        this.attributeSati = 0;
+        this.attributeCampbell = 0;
+
         this.carregarHerois();
         this.cdr.detectChanges(); // Atualiza a tela com o início da jornada
       },
@@ -195,7 +239,8 @@ export class Quizz implements OnInit {
           this.nextQuestionData = res;
         }
         this.carregarHerois();
-        this.cdr.detectChanges(); // Esconde o loader e exibe o insight imediatamente na tela!
+        this.carregarHistorico(this.currentUser!.id); // Carrega o histórico atualizado para computar o XP do novo dia!
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Erro ao enviar reflexão:', err);
@@ -221,5 +266,91 @@ export class Quizz implements OnInit {
       this.mentorChallenge = '';
       this.nextQuestionData = undefined;
     }
+  }
+
+  // Métodos de Controle do Mapa e Gamificação
+  public carregarHistorico(userId: number): void {
+    this.journeyService.getJourneyHistory(userId).subscribe({
+      next: (res: JourneyStage[]) => {
+        this.history = res;
+        this.calcularGamificacao();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar histórico:', err);
+      }
+    });
+  }
+
+  public calcularGamificacao(): void {
+    let totalXp = 0;
+    let stoicismPoints = 0;
+    let jungPoints = 0;
+    let satiPoints = 0;
+    let campbellPoints = 0;
+
+    this.history.forEach(stage => {
+      // 100 XP por dia concluído
+      totalXp += 100;
+      
+      // Bônus de profundidade (mais de 150 caracteres)
+      const answerLength = stage.user_answer ? stage.user_answer.trim().length : 0;
+      if (answerLength >= 150) {
+        totalXp += 50;
+        satiPoints += 25; // Reflexões profundas ativam a Atenção Plena
+      } else {
+        satiPoints += 10;
+      }
+
+      // Pontos de atributos baseados na fase psicológica
+      const phaseLower = stage.phase.toLowerCase();
+      if (phaseLower.includes('partida') || phaseLower.includes('separa')) {
+        stoicismPoints += 33; // 3 dias na Partida = 100% de Estoicismo
+      } else if (phaseLower.includes('inicia') || phaseLower.includes('prova')) {
+        jungPoints += 33;     // 3 dias na Iniciação = 100% de Jung/Sombra
+      } else if (phaseLower.includes('retorno') || phaseLower.includes('integra')) {
+        campbellPoints += 50; // 2 dias no Retorno = 100% de Campbell/Herói
+      }
+    });
+
+    this.xp = totalXp;
+
+    // Nível de Consciência: Cada nível requer 400 XP
+    const levelThreshold = 400;
+    this.levelNum = Math.floor(this.xp / levelThreshold) + 1;
+    const xpInCurrentLevel = this.xp % levelThreshold;
+    this.xpPercentage = Math.min(Math.round((xpInCurrentLevel / levelThreshold) * 100), 100);
+
+    const titles = [
+      'Iniciado Solitário',
+      'Buscador da Verdade',
+      'Explorador da Sombra',
+      'Guerreiro Consciente',
+      'Sábio Integrado',
+      'Mestre do Self'
+    ];
+    this.levelName = titles[Math.min(this.levelNum - 1, titles.length - 1)];
+
+    // Limita os atributos de 0 a 100
+    this.attributeStoicism = Math.min(stoicismPoints, 100);
+    this.attributeJung = Math.min(jungPoints, 100);
+    this.attributeSati = Math.min(satiPoints, 100);
+    this.attributeCampbell = Math.min(campbellPoints, 100);
+  }
+
+  public abrirDetalheDia(stage: JourneyStage): void {
+    this.selectedStage = stage;
+    this.showHistoryModal = true;
+    this.cdr.detectChanges();
+  }
+
+  public fecharModal(): void {
+    this.selectedStage = null;
+    this.showHistoryModal = false;
+    this.cdr.detectChanges();
+  }
+
+  public obterEstagioDoDia(day: number): JourneyStage | undefined {
+    return this.history.find(stage => stage.current_day === day);
   }
 }

@@ -1,4 +1,4 @@
-<div class="quizz_container">
+<div class="quizz_container" [class.gameplay_active]="isStarted">
 
     <div class="quizz_header">
         <h2 class="title_spark">{{ title }}</h2>
@@ -30,105 +30,180 @@
                     <p class="no_users">Nenhum herói cadastrado ainda. Crie um herói acima para começar!</p>
                 } @else {
                     <div class="users_list">
-                        @for (user of users; track user.id) {
-                            <div class="user_item" (click)="selecionarHeroi(user)">
-                                <div class="user_info">
-                                    <span class="user_name">🛡️ {{ user.name }}</span>
-                                    <span class="user_status">
-                                        @if (user.finished) {
-                                            <span class="finished_tag">🏆 Concluído</span>
-                                        } @else {
-                                            Dia {{ user.current_day }} da Jornada
-                                        }
-                                    </span>
-                                </div>
-                                <button class="btn-delete-user" (click)="deletarHeroi(user.id, $event)" title="Excluir herói">🗑️</button>
-                            </div>
-                        }
+                         @for (user of users; track user.id) {
+                             <div class="user_item" (click)="selecionarHeroi(user)">
+                                 <div class="user_info">
+                                     <span class="user_name">🛡️ {{ user.name }}</span>
+                                     <span class="user_status">
+                                         @if (user.finished) {
+                                             <span class="finished_tag">🏆 Concluído</span>
+                                         } @else {
+                                             Dia {{ user.current_day }} da Jornada
+                                         }
+                                     </span>
+                                 </div>
+                                 <button class="btn-delete-user" (click)="deletarHeroi(user.id, $event)" title="Excluir herói">🗑️</button>
+                             </div>
+                         }
                     </div>
                 }
             </div>
         </div>
     } @else {
-        <!-- TELA 2: FLUXO DE PERGUNTAS / JOGO -->
-        <div class="journey_card">
+        <!-- TELA 2: FLUXO DE PERGUNTAS / JOGO E GAMIFICAÇÃO EM DUAS COLUNAS -->
+        <div class="quizz_gameplay_layout">
             
-            <!-- Botão de voltar ao menu -->
-            <button class="btn-back-menu" (click)="sairDoJogo()">❮ Voltar ao Menu de Heróis</button>
+            <!-- COLUNA DA ESQUERDA: JOGO/REFLEXÃO -->
+            <div class="journey_card">
+                
+                <!-- Botão de voltar ao menu -->
+                <button class="btn-back-menu" (click)="sairDoJogo()">❮ Voltar ao Menu de Heróis</button>
 
-            <!-- Ficha de progresso diário -->
-            <div class="journey_meta">
-                <span class="badge_user">Herói: {{ currentUser?.name }}</span>
-                <span class="badge_day">Dia {{ currentDay }} da Jornada</span>
-                <span class="badge_phase">{{ phase }}</span>
+                <!-- Ficha de progresso diário -->
+                <div class="journey_meta">
+                    <span class="badge_user">Herói: {{ currentUser?.name }}</span>
+                    <span class="badge_day">Dia {{ currentDay }} da Jornada</span>
+                    <span class="badge_phase">{{ phase }}</span>
+                </div>
+
+                <!-- Pergunta do Dia -->
+                <div class="quizz_questions">
+                    <h3>{{ question }}</h3>
+                </div>
+
+                <!-- Lógica Condicional: Se o dia ainda não foi respondido -->
+                @if (!isDayCompleted) {
+                    <div class="quizz_input_area">
+                        <textarea 
+                            [(ngModel)]="answerInput" 
+                            placeholder="Digite aqui sua reflexão sincera e profunda..." 
+                            rows="6"
+                            class="text-area-mistic"
+                            [disabled]="isLoading"
+                        ></textarea>
+                        
+                        <div class="action_bar">
+                            @if (isLoading) {
+                                <div class="spinner_container">
+                                    <span class="spinner"></span>
+                                    <p>O Oráculo está consultando os livros de sabedoria...</p>
+                                </div>
+                            } @else {
+                                <button class="btn-primary" (click)="enviarReflexao()">Consultar Oráculo</button>
+                            }
+                        </div>
+                    </div>
+                } @else {
+                    <!-- Lógica Condicional: Se o dia JÁ foi respondido, exibe o insight RAG -->
+                    <div class="insight_result">
+                        <div class="insight_header">
+                            <h4>🔮 Insight do Mentor Virtual</h4>
+                        </div>
+                        <div class="insight_content">
+                            <p class="reflection_text">{{ mentorInsightText }}</p>
+                        </div>
+
+                        @if (mentorMeditation) {
+                            <div class="insight_meditation">
+                                <h5>🧘 Meditação Diária</h5>
+                                <p class="meditation_text"><em>"{{ mentorMeditation }}"</em></p>
+                            </div>
+                        }
+
+                        @if (mentorChallenge) {
+                            <div class="insight_challenge">
+                                <h5>⚔️ Desafio Prático</h5>
+                                <p class="challenge_text">{{ mentorChallenge }}</p>
+                            </div>
+                        }
+
+                        <div class="insight_actions">
+                            @if (isFinished) {
+                                <div class="congratulations_panel">
+                                    <h3>🎉 Jornada Concluída!</h3>
+                                    <p>Você completou o seu trajeto e integrou o elixir do autoconhecimento. Volte amanhã ou reinicie quando quiser.</p>
+                                    <button class="btn-primary" (click)="iniciarJornada()">Reiniciar Jornada</button>
+                                </div>
+                            } @else {
+                                <button class="btn-next" (click)="avancarDia()">Avançar para o Próximo Dia ➔</button>
+                            }
+                        </div>
+                    </div>
+                }
             </div>
 
-            <!-- Pergunta do Dia -->
-            <div class="quizz_questions">
-                <h3>{{ question }}</h3>
+            <!-- COLUNA DA DIREITA: PAINEL DE GAMIFICAÇÃO E MAPA DE 21 DIAS -->
+            <div class="gamification_sidebar">
+                
+                <!-- Card de Nível e XP -->
+                <app-xp-card 
+                    [levelNum]="levelNum" 
+                    [levelName]="levelName" 
+                    [xp]="xp" 
+                    [xpPercentage]="xpPercentage"
+                ></app-xp-card>
+
+                <!-- Atributos de Sabedoria -->
+                <app-attributes-card 
+                    [stoicism]="attributeStoicism" 
+                    [jung]="attributeJung" 
+                    [sati]="attributeSati" 
+                    [campbell]="attributeCampbell"
+                ></app-attributes-card>
+
+                <!-- Trilha de Progresso dos 21 Dias -->
+                <app-journey-trail-card 
+                    [totalJourneyDays]="totalJourneyDays" 
+                    [currentDay]="currentDay" 
+                    [history]="history" 
+                    (selectStage)="abrirDetalheDia($event)"
+                ></app-journey-trail-card>
             </div>
-
-            <!-- Lógica Condicional: Se o dia ainda não foi respondido -->
-            @if (!isDayCompleted) {
-                <div class="quizz_input_area">
-                    <textarea 
-                        [(ngModel)]="answerInput" 
-                        placeholder="Digite aqui sua reflexão sincera e profunda..." 
-                        rows="6"
-                        class="text-area-mistic"
-                        [disabled]="isLoading"
-                    ></textarea>
-                    
-                    <div class="action_bar">
-                        @if (isLoading) {
-                            <div class="spinner_container">
-                                <span class="spinner"></span>
-                                <p>O Oráculo está consultando os livros de sabedoria...</p>
-                            </div>
-                        } @else {
-                            <button class="btn-primary" (click)="enviarReflexao()">Consultar Oráculo</button>
-                        }
-                    </div>
-                </div>
-            } @else {
-                <!-- Lógica Condicional: Se o dia JÁ foi respondido, exibe o insight RAG -->
-                <div class="insight_result">
-                    <div class="insight_header">
-                        <h4>🔮 Insight do Mentor Virtual</h4>
-                    </div>
-                    <div class="insight_content">
-                        <p class="reflection_text">{{ mentorInsightText }}</p>
-                    </div>
-
-                    @if (mentorMeditation) {
-                        <div class="insight_meditation">
-                            <h5>🧘 Meditação Diária</h5>
-                            <p class="meditation_text"><em>"{{ mentorMeditation }}"</em></p>
-                        </div>
-                    }
-
-                    @if (mentorChallenge) {
-                        <div class="insight_challenge">
-                            <h5>⚔️ Desafio Prático</h5>
-                            <p class="challenge_text">{{ mentorChallenge }}</p>
-                        </div>
-                    }
-
-                    <div class="insight_actions">
-                        @if (isFinished) {
-                            <div class="congratulations_panel">
-                                <h3>🎉 Jornada Concluída!</h3>
-                                <p>Você completou o seu trajeto e integrou o elixir do autoconhecimento. Volte amanhã ou reinicie quando quiser.</p>
-                                <button class="btn-primary" (click)="iniciarJornada()">Reiniciar Jornada</button>
-                            </div>
-                        } @else {
-                            <button class="btn-next" (click)="avancarDia()">Avançar para o Próximo Dia ➔</button>
-                        }
-                    </div>
-                </div>
-            }
-
         </div>
     }
 
+    <!-- MODAL MÍSTICO DE DIÁRIO RETROSPECTIVO -->
+    @if (showHistoryModal && selectedStage) {
+        <div class="modal_overlay" (click)="fecharModal()">
+            <div class="modal_mistic_card" (click)="$event.stopPropagation()">
+                <button class="modal_close_btn" (click)="fecharModal()">×</button>
+                
+                <div class="modal_header">
+                    <span class="modal_day">Dia {{ selectedStage.current_day }} da Jornada</span>
+                    <h3 class="modal_title">{{ selectedStage.phase }}</h3>
+                </div>
+
+                <div class="modal_body">
+                    <div class="modal_section">
+                        <h4>❓ Pergunta do Oráculo</h4>
+                        <p class="modal_question">{{ selectedStage.question }}</p>
+                    </div>
+
+                    <div class="modal_section">
+                        <h4>✍️ Sua Reflexão</h4>
+                        <p class="modal_answer">"{{ selectedStage.user_answer }}"</p>
+                    </div>
+
+                    <div class="modal_section highlight">
+                        <h4>🔮 Insight do Mentor</h4>
+                        <p class="modal_insight">{{ selectedStage.mentor_insight.insight }}</p>
+                    </div>
+
+                    @if (selectedStage.mentor_insight.meditation) {
+                        <div class="modal_section meditation">
+                            <h4>🧘 Meditação Diária Praticada</h4>
+                            <p class="modal_meditation"><em>"{{ selectedStage.mentor_insight.meditation }}"</em></p>
+                        </div>
+                    }
+
+                    @if (selectedStage.mentor_insight.challenge) {
+                        <div class="modal_section challenge">
+                            <h4>⚔️ Desafio Proposto</h4>
+                            <p class="modal_challenge">{{ selectedStage.mentor_insight.challenge }}</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
 </div>

@@ -1,0 +1,39 @@
+<div class="journey_trail_card">
+    <h4>Mapa da Jornada (21 Dias)</h4>
+    <div class="journey_trail">
+        @for (day of totalJourneyDays; track day) {
+            @let stage = obterEstagioDoDia(day);
+            @if (stage) {
+                <!-- Dias passados e concluídos -->
+                <button 
+                    class="map_node completed" 
+                    (click)="clicarNoNo(stage)" 
+                    [title]="'Rever Dia ' + day + ': ' + stage.phase"
+                >
+                    <span class="node_icon">✓</span>
+                    <span class="node_day">Dia {{ day }}</span>
+                </button>
+            } @else if (day === currentDay) {
+                <!-- Dia atual ativo -->
+                <button 
+                    class="map_node active" 
+                    [disabled]="true" 
+                    title="Dia atual em progresso"
+                >
+                    <span class="node_icon">⚔️</span>
+                    <span class="node_day">Dia {{ day }}</span>
+                </button>
+            } @else {
+                <!-- Dias futuros bloqueados -->
+                <button 
+                    class="map_node locked" 
+                    [disabled]="true" 
+                    title="Bloqueado"
+                >
+                    <span class="node_icon">🔒</span>
+                    <span class="node_day">Dia {{ day }}</span>
+                </button>
+            }
+        }
+    </div>
+</div>

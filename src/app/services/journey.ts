@@ -25,6 +25,25 @@ export interface JourneyResponse {
   finished?: boolean;
 }
 
+export interface JourneyStage {
+  id: number;
+  user_id: number;
+  current_day: number;
+  phase: string;
+  question: string;
+  user_answer: string;
+  mentor_insight: {
+    insight: string;
+    meditation: string;
+    challenge: string;
+    phase: string;
+    next_question: string;
+    finished: boolean;
+  };
+  created_at: string;
+  updated_at: string;
+}
+
 @Injectable({
   providedIn: 'root' // Torna o serviço disponível globalmente na aplicação
 })
@@ -62,5 +81,12 @@ export class JourneyService {
    */
   respondQuestion(userId: number, answer: string): Observable<JourneyResponse> {
     return this.http.post<JourneyResponse>(`${this.apiUrl}/journey/respond`, { user_id: userId, answer });
+  }
+
+  /**
+   * Recupera o histórico completo das fatias da jornada do herói.
+   */
+  getJourneyHistory(userId: number): Observable<JourneyStage[]> {
+    return this.http.get<JourneyStage[]>(`${this.apiUrl}/journey/history/${userId}`);
   }
 }

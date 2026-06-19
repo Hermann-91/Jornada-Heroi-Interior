@@ -19,3 +19,4 @@ Route::delete('/users/{id}', [UserController::class, 'destroy']);
 // Rotas da Jornada do Herói (RESTful)
 Route::post('/journey/start', [JourneyController::class, 'start']);
 Route::post('/journey/respond', [JourneyController::class, 'respond']);
+Route::get('/journey/history/{userId}', [JourneyController::class, 'history']);

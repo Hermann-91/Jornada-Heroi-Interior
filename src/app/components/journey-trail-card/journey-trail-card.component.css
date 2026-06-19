@@ -1,0 +1,117 @@
+.journey_trail_card {
+    position: relative;
+    background: rgba(18, 14, 30, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    border-radius: 24px;
+    padding: 1.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.journey_trail_card h4 {
+    font-size: 1.1rem;
+    color: #f8fafc;
+    font-weight: 700;
+    margin: 0 0 1.25rem 0;
+    border-left: 3px solid #c084fc;
+    padding-left: 0.5rem;
+    text-align: left;
+}
+
+.journey_trail {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.map_node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.75rem 0.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    outline: none;
+}
+
+.map_node:hover:not([disabled]) {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.4);
+    transform: scale(1.05);
+}
+
+.map_node.completed {
+    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.06);
+}
+
+.completed .node_icon {
+    color: #10b981;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.completed .node_day {
+    color: #a7f3d0;
+}
+
+.map_node.active {
+    border-color: #fbbf24;
+    background: rgba(253, 224, 71, 0.1);
+    cursor: default;
+    animation: pulseGlow 2s infinite alternate;
+}
+
+.active .node_icon {
+    color: #f59e0b;
+    font-size: 1.1rem;
+}
+
+.active .node_day {
+    color: #fef08a;
+    font-weight: bold;
+}
+
+.map_node.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.locked .node_icon {
+    color: #94a3b8;
+}
+
+.locked .node_day {
+    color: #64748b;
+}
+
+.node_icon {
+    font-size: 1rem;
+}
+
+.node_day {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 5px rgba(245, 158, 11, 0.2), inset 0 0 5px rgba(245, 158, 11, 0.1);
+        border-color: rgba(245, 158, 11, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.6), inset 0 0 10px rgba(245, 158, 11, 0.3);
+        border-color: #fbbf24;
+    }
+}
