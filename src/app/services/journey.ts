@@ -31,6 +31,7 @@ export interface JourneyStage {
   id: number;
   user_id: number;
   current_day: number;
+  step: number;
   phase: string;
   question: string;
   user_answer: string;

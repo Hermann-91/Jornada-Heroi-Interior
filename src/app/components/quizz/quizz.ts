@@ -303,26 +303,35 @@ export class Quizz implements OnInit {
     let campbellPoints = 0;
 
     this.history.forEach(stage => {
-      // 100 XP por dia concluído
-      totalXp += 100;
-      
-      // Bônus de profundidade (mais de 150 caracteres)
+      const isDayCompleted = stage.step === 3;
       const answerLength = stage.user_answer ? stage.user_answer.trim().length : 0;
-      if (answerLength >= 150) {
-        totalXp += 50;
-        satiPoints += 25; // Reflexões profundas ativam a Atenção Plena
-      } else {
-        satiPoints += 10;
+      const isDeepReflection = answerLength >= 150;
+
+      // 1. Cálculo de XP
+      if (isDayCompleted) {
+        totalXp += 100; // Dia concluído dá 100 XP
+      }
+      if (isDeepReflection) {
+        totalXp += 25; // Resposta profunda dá +25 XP de bônus
       }
 
-      // Pontos de atributos baseados na fase psicológica
-      const phaseLower = stage.phase.toLowerCase();
-      if (phaseLower.includes('partida') || phaseLower.includes('separa')) {
-        stoicismPoints += 33; // 3 dias na Partida = 100% de Estoicismo
-      } else if (phaseLower.includes('inicia') || phaseLower.includes('prova')) {
-        jungPoints += 33;     // 3 dias na Iniciação = 100% de Jung/Sombra
-      } else if (phaseLower.includes('retorno') || phaseLower.includes('integra')) {
-        campbellPoints += 50; // 2 dias no Retorno = 100% de Campbell/Herói
+      // 2. Atributo de Presença (Sāti) - Acumula a cada passo reflexivo do diário
+      if (isDeepReflection) {
+        satiPoints += 3;
+      } else {
+        satiPoints += 1;
+      }
+
+      // 3. Atributos de fase - Acumula apenas nos dias CONCLUÍDOS (step === 3)
+      if (isDayCompleted) {
+        const phaseLower = stage.phase.toLowerCase();
+        if (phaseLower.includes('partida') || phaseLower.includes('separa')) {
+          stoicismPoints += 15; // 7 dias de Partida * 15 = 105% (limita a 100%)
+        } else if (phaseLower.includes('inicia') || phaseLower.includes('prova')) {
+          jungPoints += 13;     // 8 dias de Iniciação * 13 = 104% (limita a 100%)
+        } else if (phaseLower.includes('retorno') || phaseLower.includes('integra')) {
+          campbellPoints += 17; // 6 dias de Retorno * 17 = 102% (limita a 100%)
+        }
       }
     });
 
@@ -344,10 +353,13 @@ export class Quizz implements OnInit {
     ];
     this.levelName = titles[Math.min(this.levelNum - 1, titles.length - 1)];
 
+    // Mapeia o progresso de Presença (Sāti) - assume-se meta saudável de 40 pontos no jogo
+    const satiPercentage = Math.round((satiPoints / 40) * 100);
+
     // Limita os atributos de 0 a 100
     this.attributeStoicism = Math.min(stoicismPoints, 100);
     this.attributeJung = Math.min(jungPoints, 100);
-    this.attributeSati = Math.min(satiPoints, 100);
+    this.attributeSati = Math.min(satiPercentage, 100);
     this.attributeCampbell = Math.min(campbellPoints, 100);
   }
 
