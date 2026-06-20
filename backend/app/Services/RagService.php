@@ -178,11 +178,18 @@ class RagService
     }
 
     /**
-     * Envia os trechos de livros recuperados + resposta do usuário para o Gemini
-     * e gera um insight personalizado do Mentor contendo reflexões, meditação e desafio prático.
+     * Envia os trechos de livros recuperados + respostas do usuário para o Gemini
+     * e gera um insight personalizado do Mentor (de diálogo intermediário ou completo diário).
      */
-    public function generateInsight(string $userAnswer, array $contexts, int $currentDay = 1, array $history = []): string
-    {
+    public function generateInsight(
+        array $currentDayAnswers,
+        int $step,
+        int $currentDay,
+        array $currentDayTheme,
+        ?array $nextDayTheme,
+        array $contexts,
+        array $history
+    ): string {
         $apiKey = config('services.gemini.key');
         $model = config('services.gemini.model');
 
@@ -191,39 +198,77 @@ class RagService
 
         // Constrói o histórico da jornada para guiar a progressão dinâmica
         $historyText = "";
-        foreach ($history as $step) {
-            $historyText .= "Dia {$step['current_day']} (Fase: {$step['phase']}):\n";
-            $historyText .= "Pergunta: {$step['question']}\n";
-            $historyText .= "Resposta do Usuário: {$step['user_answer']}\n\n";
+        foreach ($history as $stepEntry) {
+            $historyText .= "Dia {$stepEntry['current_day']} (Fase: {$stepEntry['phase']}):\n";
+            $historyText .= "Pergunta Final: {$stepEntry['question']}\n";
+            $historyText .= "Resposta do Usuário: {$stepEntry['user_answer']}\n\n";
         }
 
-        // Engenharia de Prompt (System Prompt & RAG Context para estruturar resposta em JSON)
-        $prompt = "Você é o Oráculo/Mentor da Jornada do Herói de autoconhecimento do usuário. Sua tarefa é analisar a resposta atual do usuário, usar a sabedoria dos livros fornecidos e gerar uma resposta estruturada estritamente em formato JSON.\n\n";
-        $prompt .= "Instruções:\n";
-        $prompt .= "1. Analise de forma reflexiva e profunda a resposta do usuário.\n";
-        $prompt .= "2. Utilize os trechos de livros fornecidos abaixo como base de sabedoria para estruturar o seu insight.\n";
-        $prompt .= "3. Proponha um desafio prático comportamental ou mental baseado estritamente nas práticas dos livros (como dicotomia do controle do Estoicismo, integração da sombra de Jung ou reflexão do mentor de Campbell).\n";
-        $prompt .= "4. A jornada deve avançar dinamicamente pelas fases da Jornada do Herói: 'Partida / Separação', 'Iniciação / Provações' e 'Retorno / Integração'. O dia atual da jornada é o Dia {$currentDay}.\n";
-        $prompt .= "5. Se o dia atual for 12 ou mais, avalie se o usuário demonstrou maturidade e integração nas respostas anteriores. Se sim, você pode finalizar a jornada definindo 'finished' como true. A jornada DEVE obrigatoriamente terminar até o Dia 21.\n\n";
-        $prompt .= "Você deve retornar APENAS o JSON abaixo (sem markdown extra, sem texto fora do JSON):\n";
-        $prompt .= "{\n";
-        $prompt .= "  \"insight\": \"(Sua reflexão profunda e acolhedora, conectando a resposta do usuário aos conceitos dos livros. Máximo 4 parágrafos)\",\n";
-        $prompt .= "  \"meditation\": \"(Uma frase curta de meditação focada no tema de hoje. Máximo 150 caracteres)\",\n";
-        $prompt .= "  \"challenge\": \"(O desafio prático ou atividade psicológica recomendada com base nas técnicas dos livros. Seja claro e acionável)\",\n";
-        $prompt .= "  \"phase\": \"(A fase sugerida para o dia seguinte: 'Partida / Separação', 'Iniciação / Provações' ou 'Retorno / Integração')\",\n";
-        $prompt .= "  \"next_question\": \"(A próxima pergunta reflexiva personalizada para o dia seguinte, dando continuidade orgânica ao aprendizado do usuário)\",\n";
-        $prompt .= "  \"finished\": false\n";
-        $prompt .= "}\n\n";
+        // Define o prompt dinamicamente de acordo com o step atual da conversação
+        $prompt = "";
+        if ($step < 3) {
+            // PROMPT PARA ETAPAS DIALÉTICAS INTERMEDIÁRIAS (Passo 1 e 2)
+            $prompt = "Você é o Mentor/Oráculo da Jornada do Herói de autoconhecimento do usuário. Estamos no Dia {$currentDay} da Jornada.\n";
+            $prompt .= "O tema do dia de hoje é: '{$currentDayTheme['theme']}' (Fase: {$currentDayTheme['phase']}).\n";
+            $prompt .= "Estamos no Passo {$step} de 3 da conversa diária. Sua tarefa é acolher a resposta do usuário, cruzar semanticamente com os trechos dos livros de apoio fornecidos e criar a próxima pergunta de investigação para aprofundar o autoconhecimento dele.\n\n";
+            $prompt .= "Instruções:\n";
+            $prompt .= "1. Analise de forma atenta o que o usuário respondeu no passo atual.\n";
+            $prompt .= "2. Formule uma resposta curta (insight_curto) de 1 parágrafo relacionando a reflexão dele com a filosofia dos livros.\n";
+            $prompt .= "3. Crie uma subpergunta provocativa e instigante (next_question) para o passo seguinte, permitindo que ele elabore sentimentos ou detalhes mais profundos sobre a questão de hoje.\n";
+            $prompt .= "4. Retorne a resposta ESTRITAMENTE no formato JSON abaixo, sem textos extras ou formatação markdown:\n";
+            $prompt .= "{\n";
+            $prompt .= "  \"insight_curto\": \"(Seu breve feedback filosófico baseado na resposta dele e nos livros. Máximo 1 parágrafo curto)\",\n";
+            $prompt .= "  \"next_question\": \"(A pergunta investigativa complementar para o passo seguinte do mesmo dia)\"\n";
+            $prompt .= "}\n\n";
+        } else {
+            // PROMPT PARA A ETAPA DE CONSOLIDAÇÃO DIÁRIA E INSIGHT COMPLETO (Passo 3)
+            $prompt = "Você é o Mentor/Oráculo da Jornada do Herói de autoconhecimento do usuário. Estamos no Dia {$currentDay} da Jornada.\n";
+            $prompt .= "O tema do dia de hoje é: '{$currentDayTheme['theme']}' (Fase: {$currentDayTheme['phase']}).\n";
+            $prompt .= "Estamos no Passo 3 de 3 (Fechamento do Dia). O usuário respondeu às 3 perguntas de hoje. Sua tarefa é analisar o diálogo consolidado, usar os livros como base profunda e gerar a revelação diária contendo insight amplo, frase de meditação, desafio comportamental e a pergunta inicial do dia seguinte.\n\n";
+            $prompt .= "Instruções:\n";
+            $prompt .= "1. Analise o conjunto completo de respostas do dia de hoje.\n";
+            $prompt .= "2. Gere um insight amplo (insight) de até 4 parágrafos, contextualizando a jornada psicológica do herói com trechos do RAG (Dhammapada, Campbell, Jung, Marco Aurélio).\n";
+            $prompt .= "3. Proponha uma frase curta de meditação diária (meditation) focada no tema aprendido hoje (máximo 150 caracteres).\n";
+            $prompt .= "4. Proponha um desafio comportamental prático e acionável (challenge) baseado na sabedoria aplicada dos livros.\n";
+            if ($nextDayTheme) {
+                $prompt .= "5. Mapeie a transição de tema. O tema do próximo dia (Dia " . ($currentDay + 1) . ") será: '{$nextDayTheme['theme']}'. A pergunta inicial mapeada para o próximo dia é: '{$nextDayTheme['question']}'. Você deve sugerir essa pergunta e fase no retorno JSON.\n";
+            } else {
+                $prompt .= "5. Não há dia seguinte (Fim da jornada de 21 dias). Defina 'finished' como true.\n";
+            }
+            $prompt .= "6. Se o dia atual for 21, defina 'finished' como true.\n";
+            $prompt .= "7. Retorne a resposta ESTRITAMENTE no formato JSON abaixo, sem textos extras ou formatação markdown:\n";
+            $prompt .= "{\n";
+            $prompt .= "  \"insight\": \"(Sua revelação e reflexão profunda consolidando as 3 respostas dele aos livros. Máximo 4 parágrafos)\",\n";
+            $prompt .= "  \"meditation\": \"(A frase curta de meditação. Máximo 150 caracteres)\",\n";
+            $prompt .= "  \"challenge\": \"(O desafio prático comportamental recomendado)\",\n";
+            $prompt .= "  \"phase\": \"(A fase do dia seguinte de acordo com o mapa: '" . ($nextDayTheme['phase'] ?? 'Retorno / Integração') . "')\",\n";
+            $prompt .= "  \"next_question\": \"(A pergunta inicial para o dia seguinte que foi fornecida nas instruções: '" . ($nextDayTheme['question'] ?? '') . "')\",\n";
+            $prompt .= "  \"finished\": " . ($currentDay >= 21 ? 'true' : 'false') . "\n";
+            $prompt .= "}\n\n";
+        }
 
         if (!empty($historyText)) {
-            $prompt .= "=== HISTÓRICO DAS ETAPAS ANTERIORES ===\n";
+            $prompt .= "=== HISTÓRICO DOS DIAS ANTERIORES CONCLUÍDOS ===\n";
             $prompt .= $historyText . "\n";
         }
 
-        $prompt .= "=== TRECHOS DOS LIVROS (CONTEXTO RECUPERADO) ===\n";
+        $prompt .= "=== TRECHOS DOS LIVROS DE HOJE (RAG CONTEXT) ===\n";
         $prompt .= $contextText . "\n\n";
-        $prompt .= "=== RESPOSTA ATUAL DO USUÁRIO ===\n";
-        $prompt .= "\"{$userAnswer}\"\n\n";
+
+        if ($step < 3) {
+            $prompt .= "=== DIÁLOGO DO DIA ATUAL ATÉ AGORA ===\n";
+            foreach ($currentDayAnswers as $i => $ans) {
+                $prompt .= "Resposta Passo " . ($i + 1) . ": \"{$ans}\"\n";
+            }
+            $prompt .= "\n=== RESPOSTA ATUAL DO PASSO {$step} ===\n";
+            $prompt .= "\"" . end($currentDayAnswers) . "\"\n\n";
+        } else {
+            $prompt .= "=== DIÁLOGO CONSOLIDADO DO DIA DE HOJE ===\n";
+            $prompt .= "1ª Resposta: \"{$currentDayAnswers[0]}\"\n";
+            $prompt .= "2ª Resposta: \"{$currentDayAnswers[1]}\"\n";
+            $prompt .= "3ª Resposta: \"{$currentDayAnswers[2]}\"\n\n";
+        }
+
         $prompt .= "RESPOSTA EM JSON:";
 
         // Envia para o modelo parametrizado no endpoint v1beta para suportar modelos experimentais e de thinking

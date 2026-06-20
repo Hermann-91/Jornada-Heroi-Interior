@@ -47,11 +47,13 @@ class UserController extends Controller
                 ];
             }
 
+            $isCompleted = ($lastEntry->step === 3);
+
             return [
                 'id' => $user->id,
                 'name' => $user->name,
-                'current_day' => $lastEntry->current_day + 1,
-                'phase' => $lastInsight['next_phase'] ?? 'Iniciação / Provações',
+                'current_day' => $isCompleted ? $lastEntry->current_day + 1 : $lastEntry->current_day,
+                'phase' => $isCompleted ? ($lastInsight['next_phase'] ?? 'Iniciação / Provações') : $lastEntry->phase,
                 'question' => $lastInsight['next_question'] ?? 'Como você se sente com relação a esse momento?',
                 'finished' => false,
                 'created_at' => $user->created_at,

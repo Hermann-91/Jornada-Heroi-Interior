@@ -219,27 +219,40 @@ export class Quizz implements OnInit {
 
     this.journeyService.respondQuestion(this.currentUser.id, this.answerInput).subscribe({
       next: (res: JourneyResponse) => {
-        // Recebe o insight do RAG
-        const insightData = res.journey_record?.mentor_insight;
-        if (insightData && typeof insightData === 'object') {
-          this.mentorInsightText = insightData.insight || '';
-          this.mentorMeditation = insightData.meditation || '';
-          this.mentorChallenge = insightData.challenge || '';
-        } else {
-          this.mentorInsightText = typeof insightData === 'string' ? insightData : '';
-          this.mentorMeditation = '';
-          this.mentorChallenge = '';
-        }
-        this.isDayCompleted = true;
-        this.isFinished = res.finished || false;
-        this.isLoading = false;
+        const record = res.journey_record;
+        const insightData = record?.mentor_insight;
+        const isDayCompleted = !!res.is_day_completed;
 
-        // Armazena temporariamente os dados do dia seguinte para quando o usuário clicar em "Avançar"
-        if (!this.isFinished) {
-          this.nextQuestionData = res;
+        if (isDayCompleted) {
+          // Revelação final do dia (Passo 3 respondido)
+          if (insightData && typeof insightData === 'object') {
+            this.mentorInsightText = insightData.insight || '';
+            this.mentorMeditation = insightData.meditation || '';
+            this.mentorChallenge = insightData.challenge || '';
+          } else {
+            this.mentorInsightText = typeof insightData === 'string' ? insightData : '';
+            this.mentorMeditation = '';
+            this.mentorChallenge = '';
+          }
+          this.isDayCompleted = true;
+          this.isFinished = res.finished || false;
+
+          // Armazena temporariamente os dados do dia seguinte para quando o herói avançar
+          if (!this.isFinished) {
+            this.nextQuestionData = res;
+          }
+        } else {
+          // Diálogo intermediário (Passo 1 ou 2 respondido)
+          // Exibe o insight curto da IA e carrega a subpergunta gerada para a caixa de texto
+          this.mentorInsightText = insightData?.insight || '';
+          this.question = res.next_question || '';
+          this.isDayCompleted = false;
         }
+
+        this.answerInput = ''; // Limpa o textarea para a próxima reflexão
+        this.isLoading = false;
         this.carregarHerois();
-        this.carregarHistorico(this.currentUser!.id); // Carrega o histórico atualizado para computar o XP do novo dia!
+        this.carregarHistorico(this.currentUser!.id); // Atualiza os atributos e o mapa de dias
         this.cdr.detectChanges();
       },
       error: (err) => {

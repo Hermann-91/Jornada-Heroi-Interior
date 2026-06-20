@@ -16,6 +16,8 @@ export interface User {
 export interface JourneyResponse {
   message: string;
   current_day?: number;
+  current_step?: number;
+  is_day_completed?: boolean;
   phase?: string;
   question?: string;
   journey_record?: any;

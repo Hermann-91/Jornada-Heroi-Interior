@@ -13,6 +13,7 @@ class UserJourney extends Model
     protected $fillable = [
         'user_id',
         'current_day',
+        'step',
         'phase',
         'question',
         'user_answer',
@@ -24,6 +25,7 @@ class UserJourney extends Model
      */
     protected $casts = [
         'mentor_insight' => 'array',
+        'step' => 'integer',
     ];
 
     /**

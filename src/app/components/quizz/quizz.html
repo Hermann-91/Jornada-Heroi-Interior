@@ -73,6 +73,12 @@
 
                 <!-- Lógica Condicional: Se o dia ainda não foi respondido -->
                 @if (!isDayCompleted) {
+                    @if (mentorInsightText) {
+                        <div class="mentor_chat_bubble">
+                            <p><strong>🔮 Mentor:</strong> {{ mentorInsightText }}</p>
+                        </div>
+                    }
+
                     <div class="quizz_input_area">
                         <textarea 
                             [(ngModel)]="answerInput" 
